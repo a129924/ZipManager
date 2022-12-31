@@ -22,7 +22,7 @@ class ZipUtility:
     def __init__(self, zip_file: str, password: str = "", to_path: str = "./") -> None:  # type: ignore
         # assert zipfile.is_zipfile(zip_file)
         self.zip_file = zip_file
-        self.password = password.encode("ascii")
+        self.password = password
         self.to_path = to_path
         
     @staticmethod
@@ -42,22 +42,23 @@ class ZipExtrator(ZipUtility):
         """
         with zipfile.ZipFile(self.zip_file, "r", zipfile.ZIP_DEFLATED) as zip_reader:
             file_extension = ""
-            for file in zip_reader.namelist():
-                if create_folder_by_extension:
+            if create_folder_by_extension:
+                for file in zip_reader.namelist():
                     file_extension:str = os.path.splitext(file)[1][1:]
                     if os.path.exists(os.path.join(self.to_path, file_extension)) is not True:
                         os.mkdir(file_extension)
-                        
-                path_args:list = list(filter(lambda x: x != "", [self.to_path, file_extension]))
-                zip_reader.extract(file, path=fr".\{os.path.join(*path_args)}", pwd=self.password if self.password != b"" else None)
-    
+                zip_reader.extract(file, path=fr".\{os.path.join(self.to_path, file_extension)}", pwd=self.password.decode("ascii") if self.password != b"" else None)
+            else:
+                print("else")
+                zip_reader.extractall(path=self.to_path, pwd=self.password if self.password != b"" else None)
+                
 class ZipCreator(ZipUtility):
     """
     # 建立壓縮檔
     1. 支援加密壓縮 
     2. 支援多個檔案、資料夾，單個檔案、資料夾壓縮成壓縮檔
     """
-    def __init__(self, zip_file: str, password: str = "", to_path: str = "./", zip_filename:str = os.path.basename(os.getcwd()), zip_driver:str = "./7z.exe"):
+    def __init__(self, zip_file: str, password: str = "", to_path: str = "./", zip_filename:str = os.path.basename(os.getcwd()), zip_driver:str = "./7z.exe")->None:
         if os.path.isfile(zip_driver) is False:
             raise DriverException("Zip driver not found")
         
@@ -66,22 +67,22 @@ class ZipCreator(ZipUtility):
         self.zip_driver = zip_driver
 
 
-    def compress_files(self,src_path:str, files:list):
+    def compress_files(self,src_path:str, files:list)->bool:
         if self.is_all_defined(files) is False:
             raise FileNotDefinedException("File not defined")
         
         import subprocess
-        command = [self.zip_driver, 'a', '-p{}'.format(self.password), f"{self.zip_filename}"] + [os.path.join(src_path, file) for file in files]
+        
+        command = [self.zip_driver, 'a', f'-p{self.password}', f"{self.zip_filename}"] + [os.path.join(src_path, file) for file in files]
         result = subprocess.run(command)
         return result.returncode == 0
     
 if __name__ == "__main__":
-    # 解壓縮檔案
-    zip_file = ZipExtrator("aio.zip", password="1234", to_path="./") # V
-    print(zip_file.unzip())
+    # # 解壓縮檔案
+    # zip_file = ZipExtrator("aio1.zip", password="1234", to_path="./") # V
+    # print(zip_file.unzip())
     
     # 檔案壓縮成壓縮檔
-    create_zip = ZipCreator(zip_file = "123", password = "1234", zip_filename = "aio加密.zip")
+    create_zip = ZipCreator(zip_file = "123", password = "8482", zip_filename = "aio加密8482.zip") # V
     create_zip.compress_files(src_path="./", files= ["123.txt","1234.txt"])
-
-        
+    print(create_zip.password)
