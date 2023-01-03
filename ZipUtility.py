@@ -41,7 +41,6 @@ class ZipExtrator(ZipUtility):
         create_folder_by_extension若為True則會在to_path底下創建該檔案副檔名的資料夾 並將檔案放置在這底下 若為False會直接依照to_path放置在該路徑
         """
         with zipfile.ZipFile(self.zip_file, "r", zipfile.ZIP_DEFLATED) as zip_reader:
-            file_extension = ""
             if create_folder_by_extension:
                 for file in zip_reader.namelist():
                     file_extension:str = os.path.splitext(file)[1][1:]
