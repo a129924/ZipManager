@@ -48,7 +48,6 @@ class ZipExtrator(ZipUtility):
                         os.mkdir(file_extension)
                 zip_reader.extract(file, path=fr".\{os.path.join(self.to_path, file_extension)}", pwd=self.password.decode("ascii") if self.password != b"" else None)
             else:
-                print("else")
                 zip_reader.extractall(path=self.to_path, pwd=self.password if self.password != b"" else None)
                 
 class ZipCreator(ZipUtility):
@@ -84,4 +83,3 @@ if __name__ == "__main__":
     # 檔案壓縮成壓縮檔
     create_zip = ZipCreator(zip_file = "123", password = "8482", zip_filename = "aio加密8482.zip") # V
     create_zip.compress_files(src_path="./", files= ["123.txt","1234.txt"])
-    print(create_zip.password)
